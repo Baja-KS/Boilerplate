@@ -1,1 +1,1 @@
-# ProjectInitScript
+# Project Init + Boilerplate code script
