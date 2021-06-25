@@ -31,13 +31,6 @@ class Boilerplate(ABC):
     dirTree: dict = {}
     dependencyList: [str]
 
-    # @staticmethod
-    # def fromInput(type, path, name):
-    #     if type == 'node-express':
-    #         orm=input('Which ORM will you use,sequelize or mongoose?')
-    #         return NodeExpressBoilerplate(path, name, orm.lower())
-    #     return None
-
     def __init__(self, path, projectName):
         self.path = path
         self.projectName = projectName
@@ -46,6 +39,9 @@ class Boilerplate(ABC):
         projectDir = os.path.join(self.path, self.projectName)
         if os.path.exists(projectDir):
             print("Project already exists")
+            proceed=input('Do you want to continue? [y/N] ').lower() == 'y'
+            if proceed:
+                return
             exit(1)
         os.mkdir(projectDir)
         os.chmod(projectDir, 0o777)
