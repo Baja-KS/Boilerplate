@@ -3,6 +3,7 @@ import os
 
 
 class NodeExpressBoilerplate(Boilerplate):
+    type = 'node-express'
     dirTree = {
         "app": {
             "api": {
@@ -28,7 +29,8 @@ class NodeExpressBoilerplate(Boilerplate):
         "docker-compose.yml": {}
     }
 
-    def __init__(self, path, projectName, orm):
+    def __init__(self, path, projectName):
+        orm = input('Which ORM will you use,sequelize or mongoose?  ')
         if orm != 'mongoose' and orm != 'sequelize':
             return
         super().__init__(path, projectName)
@@ -38,8 +40,6 @@ class NodeExpressBoilerplate(Boilerplate):
             self.dirTree['app']['models']={}
         elif orm=='sequelize':
             self.dirTree['app']['.sequelizerc.js']={}
-            # self.dirTree['app']['config']={}
-            # self.dirTree['app']['config']['config.js']={}
             self.dependencyList.append('sequelize')
             self.dependencyList.append('sequelize-cli')
             self.dependencyList.append('pg')

@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 import sys
 import os
+
+
 # from node_express import NodeExpressBoilerplate
 
 
@@ -31,15 +33,21 @@ class Boilerplate(ABC):
     dirTree: dict = {}
     dependencyList: [str]
 
+    type: str = None
+
     def __init__(self, path, projectName):
         self.path = path
         self.projectName = projectName
+
+    @classmethod
+    def isOfType(cls, type: str) -> bool:
+        return cls.type == type
 
     def init(self):
         projectDir = os.path.join(self.path, self.projectName)
         if os.path.exists(projectDir):
             print("Project already exists")
-            proceed=input('Do you want to continue? [y/N] ').lower() == 'y'
+            proceed = input('Do you want to continue? [y/N] ').lower() == 'y'
             if proceed:
                 return
             exit(1)

@@ -12,6 +12,6 @@ type=sys.argv[1]
 path=sys.argv[2]
 name=sys.argv[3]
 
-boilerplate=BoilerplateFactory(type,path,name)
+boilerplate=BoilerplateFactory().fromInput(type,path,name)
 
 boilerplate.build()

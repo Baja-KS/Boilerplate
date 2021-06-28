@@ -18,6 +18,8 @@ def replace(file, pattern, subst):
     file_handle.close()
 
 class LaravelBoilerplate(Boilerplate):
+
+    type = 'laravel'
     def __init__(self, path, projectName):
         super().__init__(path, projectName)
 
