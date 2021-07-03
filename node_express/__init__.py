@@ -29,8 +29,8 @@ class NodeExpressBoilerplate(Boilerplate):
         "docker-compose.yml": {}
     }
 
-    def __init__(self, path, projectName):
-        orm = input('Which ORM will you use,sequelize or mongoose?  ')
+    def __init__(self, path:str, projectName:str):
+        orm:str = input('Which ORM will you use,sequelize or mongoose?  ')
         if orm != 'mongoose' and orm != 'sequelize':
             return
         super().__init__(path, projectName)

@@ -1,18 +1,14 @@
-from abc import ABC, abstractmethod
-import sys
 import os
+from abc import ABC, abstractmethod
 
 
-# from node_express import NodeExpressBoilerplate
-
-
-def touch(file, path=os.getcwd()):
+def touch(file: str, path: str = os.getcwd()) -> None:
     os.chdir(path)
     f = open(file, "w")
     f.close()
 
 
-def dirOrTouch(name: str):
+def dirOrTouch(name: str) -> None:
     if '.' in name or name == 'Dockerfile':
         f = open(name, "w")
         f.close()
@@ -21,7 +17,7 @@ def dirOrTouch(name: str):
         os.chmod(name, 0o777)
 
 
-def isDir(name: str):
+def isDir(name: str) -> bool:
     if '.' in name or name == 'Dockerfile':
         return False
     return True
@@ -35,7 +31,7 @@ class Boilerplate(ABC):
 
     type: str = None
 
-    def __init__(self, path, projectName):
+    def __init__(self, path: str, projectName: str):
         self.path = path
         self.projectName = projectName
 
@@ -43,7 +39,7 @@ class Boilerplate(ABC):
     def isOfType(cls, type: str) -> bool:
         return cls.type == type
 
-    def init(self):
+    def init(self) -> None:
         projectDir = os.path.join(self.path, self.projectName)
         if os.path.exists(projectDir):
             print("Project already exists")
@@ -54,7 +50,7 @@ class Boilerplate(ABC):
         os.mkdir(projectDir)
         os.chmod(projectDir, 0o777)
 
-    def __subDirs(self, node: dict):
+    def __subDirs(self, node: dict) -> None:
         for name in node.keys():
             if isDir(name):
                 oldDir = os.getcwd()
@@ -65,20 +61,20 @@ class Boilerplate(ABC):
             else:
                 dirOrTouch(name)
 
-    def directoriesAndFiles(self):
+    def directoriesAndFiles(self) -> None:
         projectDir = os.path.join(self.path, self.projectName)
         os.chdir(projectDir)
         self.__subDirs(self.dirTree)
 
     @abstractmethod
-    def dependencies(self):
+    def dependencies(self) -> None:
         pass
 
     @abstractmethod
-    def code(self):
+    def code(self) -> None:
         pass
 
-    def build(self):
+    def build(self) -> None:
         print("===================================")
         print("Boilerplate code script by BajaKS ;)")
         print("===================================")
