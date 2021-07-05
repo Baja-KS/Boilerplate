@@ -1,6 +1,7 @@
 from boilerplate import Boilerplate
 from laravel import LaravelBoilerplate
 from node_express import NodeExpressBoilerplate
+from gokit import GoKitBoilerplate
 
 
 class BoilerplateFactory():
