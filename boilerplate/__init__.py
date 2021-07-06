@@ -1,5 +1,8 @@
 import os
+import shutil
 from abc import ABC, abstractmethod
+from string import Template
+from typing import List
 
 
 def touch(file: str, path: str = os.getcwd()) -> None:
@@ -89,3 +92,45 @@ class Boilerplate(ABC):
         print("===================================")
         print("Project initialized.Make something awesome <3")
         print("===================================")
+
+    def _copyFiles(self, fromTo: dict, srcDir: str, dstDir: str):
+        for fileFrom in fromTo.keys():
+            pathFrom = fileFrom.split('/')
+            for fileTo in fromTo[fileFrom]:
+                pathTo = fileTo.split('/')
+                shutil.copyfile(os.path.join(srcDir, *pathFrom), os.path.join(dstDir, *pathTo))
+
+    def _templateFromFile(self,rootDir:str ,src: str, replace: dict) -> str:
+        path=os.path.join(rootDir,*src.split('/'))
+        with open(path, "r") as f:
+            return Template(f.read()).substitute(**replace)
+
+    def _templateFromTo(self,rootSrc:str, src: str, rootDst:str,dst: str, replace: dict) -> None:
+        path = os.path.join(rootDst, *dst.split('/'))
+        with open(path, "w") as f:
+            f.write(self._templateFromFile(rootSrc,src, replace))
+
+    def _templateComposite(self, templateStr: str, replace: dict, delimiter: str, delimiterLast: str = "\n") -> str:
+        components: List[str] = []
+        componentCount = len(list(replace.values())[0])
+        for i in range(componentCount):
+            keys = replace.keys()
+            values = list(map(lambda x: x[i], replace.values()))
+            componentDict = dict(zip(keys, values))
+            components.append(Template(templateStr).substitute(**componentDict))
+            if i == componentCount - 1:
+                components.append(delimiterLast)
+            else:
+                components.append(delimiter)
+
+        return ''.join(components)
+
+    def _templateCompositeFromFile(self, rootDir:str,src: str, replace: dict, delimiter: str) -> str:
+        path = os.path.join(rootDir, *src.split('/'))
+        with open(path, "r") as f:
+            return self._templateComposite(f.read(), replace, delimiter)
+
+    def _templateCompose(self,rootDir:str,dst:str,components:List[str])->None:
+        path = os.path.join(rootDir, *dst.split('/'))
+        with open(path,"w") as f:
+            f.write(''.join(components))

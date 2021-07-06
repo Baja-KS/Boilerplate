@@ -1,9 +1,7 @@
-from typing import Optional, List
+from typing import List
 
 from boilerplate import Boilerplate
 import os
-from string import Template
-import shutil
 
 
 class GoKitBoilerplate(Boilerplate):
@@ -44,45 +42,7 @@ class GoKitBoilerplate(Boilerplate):
     def __init__(self, path: str, projectName: str):
         super().__init__(path, projectName)
 
-    def _copyFiles(self, fromTo: dict, srcDir: str, dstDir: str):
-        for fileFrom in fromTo.keys():
-            pathFrom = fileFrom.split('/')
-            for fileTo in fromTo[fileFrom]:
-                pathTo = fileTo.split('/')
-                shutil.copyfile(os.path.join(srcDir, *pathFrom), os.path.join(dstDir, *pathTo))
-
-    def _templateFromFile(self,rootDir:str ,src: str, replace: dict) -> str:
-        path=os.path.join(rootDir,*src.split('/'))
-        with open(path, "r") as f:
-            return Template(f.read()).substitute(**replace)
-
-    def _templateFromTo(self,rootSrc:str, src: str, rootDst:str,dst: str, replace: dict) -> None:
-        path = os.path.join(rootDst, *dst.split('/'))
-        with open(path, "w") as f:
-            f.write(self._templateFromFile(rootSrc,src, replace))
-
     # replace -> key=to be replaced , value=array of values
-    def _templateComposite(self, templateStr: str, replace: dict, delimiter: str, delimiterLast: str = "\n") -> str:
-        components: List[str] = []
-        componentCount = len(list(replace.values())[0])
-        for i in range(componentCount):
-            keys = replace.keys()
-            values = list(map(lambda x: x[i], replace.values()))
-            componentDict = dict(zip(keys, values))
-            components.append(Template(templateStr).substitute(**componentDict))
-            if i == componentCount - 1:
-                components.append(delimiterLast)
-            else:
-                components.append(delimiter)
-
-        return ''.join(components)
-
-    def _templateCompositeFromFile(self, rootDir:str,src: str, replace: dict, delimiter: str) -> str:
-        path = os.path.join(rootDir, *src.split('/'))
-        with open(path, "r") as f:
-            return self._templateComposite(f.read(), replace, delimiter)
-
-    # def _templateCompose(self):
 
     def code(self) -> None:
         endpointTemplate: str = "${endpoint}Endpoint endpoint.Endpoint"
@@ -120,40 +80,32 @@ class GoKitBoilerplate(Boilerplate):
         self._templateFromTo(scriptDir,"logging.go",projectDir,"internal/service/middlewares/logging.go", {'module': self.projectName})
 
         # endpoints
-        components: List[str] = []
-        pathDst = os.path.join(projectDir, "internal", "service", "endpoints", "endpoints.go")
-        components.append(self._templateFromFile(scriptDir,"endpoint/head.go", {"module": self.projectName}))
-        components.append("\n\n")
-
         replace = {
-            "endpoints": self._templateComposite(endpointTemplate, {"endpoint": endpoints}, "\n\t",""),
-            "endpointfactories": self._templateComposite(endpointFactoryTemplate, {"endpoint": endpoints}, "\n\t\t","")
+            "endpoints": self._templateComposite(endpointTemplate, {"endpoint": endpoints}, "\n\t", ""),
+            "endpointfactories": self._templateComposite(endpointFactoryTemplate, {"endpoint": endpoints}, "\n\t\t", "")
         }
-        components.append(self._templateFromFile(scriptDir,"endpoint/set.go", replace))
-        components.append("\n\n")
+        components: List[str] = [
+            self._templateFromFile(scriptDir, "endpoint/head.go", {"module": self.projectName}),
+            "\n\n",
+            self._templateFromFile(scriptDir, "endpoint/set.go", replace),
+            "\n\n",
+            self._templateCompositeFromFile(scriptDir, "endpoint/factorymethod.go", {"endpoint": endpoints}, "\n")
+        ]
+        self._templateCompose(projectDir,"internal/service/endpoints/endpoints.go",components)
 
-        # pathSrc = os.path.join(scriptDir, 'endpoint', 'factorymethod.go')
-        components.append(self._templateCompositeFromFile(scriptDir,"endpoint/factorymethod.go", {"endpoint": endpoints}, "\n"))
-        components.append("\n\n")
-        with open(pathDst, "w") as f:
-            f.write(''.join(components))
 
         # requestsAndResponses
-        components: List[str] = []
-        pathDst = os.path.join(projectDir, "internal", "service", "endpoints", "requestsAndResponses.go")
-        components.append(self._templateFromFile(scriptDir,"requestsAndResponses/head.go", {}))
-        components.append("\n\n")
-
-        components.append(self._templateCompositeFromFile(scriptDir,"requestsAndResponses/reqres.go", {"endpoint": endpoints}, "\n"))
-        components.append("\n\n")
-
-        components.append(self._templateCompositeFromFile(scriptDir,"requestsAndResponses/decoderequest.go", {"endpoint": endpoints}, "\n"))
-        components.append("\n\n")
-
-        components.append(self._templateFromFile(scriptDir,"requestsAndResponses/encoderesponse.go", {}))
-
-        with open(pathDst, "w") as f:
-            f.write(''.join(components))
+        components = [
+            self._templateFromFile(scriptDir, "requestsAndResponses/head.go", {}),
+            "\n\n",
+            self._templateCompositeFromFile(scriptDir, "requestsAndResponses/reqres.go", {"endpoint": endpoints}, "\n"),
+            "\n\n",
+            self._templateCompositeFromFile(scriptDir, "requestsAndResponses/decoderequest.go", {"endpoint": endpoints},
+                                            "\n"),
+            "\n\n",
+            self._templateFromFile(scriptDir, "requestsAndResponses/encoderesponse.go", {})
+        ]
+        self._templateCompose(projectDir,"/internal/service/endpoints/requestsAndResponses.go",components)
 
         # service
         replace = {
